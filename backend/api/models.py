@@ -1,13 +1,11 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 # Create your models here.
-# accounts/models.py
-class User(models.Model):
+class User(AbstractUser):
     ROLE_CHOICES = [('PERSONNEL', 'Personnel'), ('SUPERVISOR', 'Supervisor'), ('MANAGER', 'Manager')]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='PERSONNEL')
-    department = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
