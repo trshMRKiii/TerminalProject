@@ -9,9 +9,12 @@ function User() {
   const [editing, setEditing] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState({
-    id: "",
+    username: "",
+    email: "",
+    first_name: "",
+    last_name: "",
+    password: "",
     role: "PERSONNEL",
-    department: "",
     is_active: true,
   });
 
@@ -46,7 +49,15 @@ function User() {
       });
       if (!response.ok) throw new Error("Failed to save user");
       fetchUsers();
-      setForm({ id: "", role: "PERSONNEL", department: "", is_active: true });
+      setForm({
+        username: "",
+        email: "",
+        first_name: "",
+        last_name: "",
+        password: "",
+        role: "PERSONNEL",
+        is_active: true,
+      });
       setEditing(null);
       setIsModalOpen(false);
     } catch (err) {
@@ -82,18 +93,42 @@ function User() {
       <form onSubmit={handleSubmit} className="mb-4">
         <input
           type="text"
-          placeholder="ID"
-          value={form.id}
-          onChange={(e) => setForm({ ...form, id: e.target.value })}
+          placeholder="Username"
+          value={form.username}
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
+          required
+          className="border p-2 mr-2"
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
           required
           className="border p-2 mr-2"
         />
         <input
           type="text"
-          placeholder="Department"
-          value={form.department}
-          onChange={(e) => setForm({ ...form, department: e.target.value })}
+          placeholder="First Name"
+          value={form.first_name}
+          onChange={(e) => setForm({ ...form, first_name: e.target.value })}
           required
+          className="border p-2 mr-2"
+        />
+        <input
+          type="text"
+          placeholder="Last Name"
+          value={form.last_name}
+          onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+          required
+          className="border p-2 mr-2"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          required={!editing} // only required when creating a new user
           className="border p-2 mr-2"
         />
         <select
@@ -115,18 +150,23 @@ function User() {
           <option value="true">Active</option>
           <option value="false">Inactive</option>
         </select>
+
         <button type="submit" className="bg-blue-500 text-white p-2">
           {editing ? "Update" : "Add"} User
         </button>
+
         {editing && (
           <button
             type="button"
             onClick={() => {
               setEditing(null);
               setForm({
-                id: "",
+                username: "",
+                email: "",
+                first_name: "",
+                last_name: "",
+                password: "",
                 role: "PERSONNEL",
-                department: "",
                 is_active: true,
               });
             }}
@@ -136,12 +176,14 @@ function User() {
           </button>
         )}
       </form>
+
       <table className="w-full border">
         <thead>
           <tr>
             <th className="border p-2">ID</th>
+            <th className="border p-2">Name</th>
+            <th className="border p-2">Email</th>
             <th className="border p-2">Role</th>
-            <th className="border p-2">Department</th>
             <th className="border p-2">Status</th>
             <th className="border p-2">Actions</th>
           </tr>
@@ -150,8 +192,11 @@ function User() {
           {users.map((user) => (
             <tr key={user.id}>
               <td className="border p-2">{user.id}</td>
+              <td className="border p-2">
+                {user.first_name} {user.last_name}
+              </td>
+              <td className="border p-2">{user.email}</td>
               <td className="border p-2">{user.role}</td>
-              <td className="border p-2">{user.department}</td>
               <td className="border p-2">
                 {user.is_active ? "Active" : "Inactive"}
               </td>
@@ -173,6 +218,7 @@ function User() {
           ))}
         </tbody>
       </table>
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center">
           <div className="bg-white p-6 rounded shadow-lg w-96">
@@ -180,26 +226,44 @@ function User() {
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
-                placeholder="ID"
-                value={form.id}
-                onChange={(e) => setForm({ ...form, id: e.target.value })}
+                placeholder="Username"
+                value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
                 required
-                className="border p-2 mr-2 w-full mb-2"
+                className="border p-2 w-full mb-2"
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+                className="border p-2 w-full mb-2"
               />
               <input
                 type="text"
-                placeholder="Department"
-                value={form.department}
+                placeholder="First Name"
+                value={form.first_name}
                 onChange={(e) =>
-                  setForm({ ...form, department: e.target.value })
+                  setForm({ ...form, first_name: e.target.value })
                 }
                 required
-                className="border p-2 mr-2 w-full mb-2"
+                className="border p-2 mr-2"
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                value={form.last_name}
+                onChange={(e) =>
+                  setForm({ ...form, last_name: e.target.value })
+                }
+                required
+                className="border p-2 mr-2"
               />
               <select
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="border p-2 mr-2 w-full mb-2"
+                className="border p-2 w-full mb-2"
               >
                 <option value="PERSONNEL">Personnel</option>
                 <option value="SUPERVISOR">Supervisor</option>
@@ -210,7 +274,7 @@ function User() {
                 onChange={(e) =>
                   setForm({ ...form, is_active: e.target.value === "true" })
                 }
-                className="border p-2 mr-2 w-full mb-2"
+                className="border p-2 w-full mb-2"
               >
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
@@ -227,9 +291,9 @@ function User() {
                   setIsModalOpen(false);
                   setEditing(null);
                   setForm({
-                    id: "",
+                    username: "",
+                    email: "",
                     role: "PERSONNEL",
-                    department: "",
                     is_active: true,
                   });
                 }}

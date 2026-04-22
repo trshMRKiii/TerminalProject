@@ -5,6 +5,7 @@ from django.db import models
 class User(AbstractUser):
     ROLE_CHOICES = [('PERSONNEL', 'Personnel'), ('SUPERVISOR', 'Supervisor'), ('MANAGER', 'Manager')]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='PERSONNEL')
+    created_at = models.DateTimeField(auto_now_add=True) 
     is_active = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
     
