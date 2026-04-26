@@ -35,6 +35,9 @@ function collection() {
           .includes(searchTerm.toLowerCase()) ||
         (ticket.driver?.name || "")
           .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        (ticket.vehicle?.route || "")
+          .toLowerCase()
           .includes(searchTerm.toLowerCase()),
     );
     setFilteredTickets(filtered);
@@ -93,6 +96,35 @@ function collection() {
     }
   };
 
+  const handleResetAmount = async (ticketId) => {
+  try {
+    // If no ticketId provided, collect all verified tickets (end of day)
+    if (!ticketId) {
+      const verifiedTickets = tickets.filter(t => t.is_verified && t.status !== "COLLECTED");
+      for (const ticket of verifiedTickets) {
+        await apiService.patch(`/tickets/${ticket.id}/`, {
+          collection_amount: 0,
+          status: "COLLECTED"
+        });
+      }
+      setSuccessMessage(`${verifiedTickets.length} ticket(s) collected successfully!`);
+    } else {
+      // Collect single ticket
+      await apiService.patch(`/tickets/${ticketId}/`, {
+        collection_amount: 0,
+        status: "COLLECTED"
+      });
+      setSuccessMessage(`Ticket ${ticketId} amount reset to 0`);
+    }
+    fetchTickets();
+    setTimeout(() => setSuccessMessage(""), 3000);
+  } catch (err) {
+    setError(err.message);
+    console.error("Error resetting collection amount:", err);
+  }
+};
+
+
   const formatTime = (dateString) => {
     try {
       const date = new Date(dateString);
@@ -130,15 +162,16 @@ function collection() {
           {/* Section 1: Shift Tally */}
           <div className="flex-1">
             <div className="space-y-4">
-              <div className="border-2 border-gray-200 rounded-lg p-4">
-                <p className="text-sm font-semibold text-muted-foreground mb-2">
+              <div className="border-2 border-gray-200 rounded-lg p-4 flex flex-row justify-between">
+                <div><p className="text-sm font-semibold text-muted-foreground mb-2">
                   Total Verified Revenue
                 </p>
                 <p className="text-3xl font-bold">
                   {batchStats
                     ? formatCurrency(batchStats.totalVerified)
                     : "₱0.00"}
-                </p>
+                </p></div>
+                <button type="button" className='border-2 border-black-200 rounded-2xl p-0.5 cursor-pointer' onClick={() => handleResetAmount()}>Collect Amount</button>
               </div>
 
               <div className="space-y-3">
@@ -291,10 +324,7 @@ function collection() {
                       </th>
                       <th className="text-left p-3 text-xs font-semibold">
                         Driver
-                      </th>
-                      <th className="text-left p-3 text-xs font-semibold">
-                        Amount
-                      </th>
+                      </th>                     
                       <th className="text-left p-3 text-xs font-semibold">
                         Verified
                       </th>
@@ -346,9 +376,7 @@ function collection() {
                           <td className="p-3 text-sm">
                             {ticket.driver?.name || "N/A"}
                           </td>
-                          <td className="p-3 text-sm">
-                            {formatCurrency(ticket.collection_amount)}
-                          </td>
+                          
                           <td className="p-3 text-sm">
                             <span
                               className={`px-2 py-1 rounded text-xs font-medium ${

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { OperationsService } from "../../../lib/operations-service";
+import { TICKET_FEE } from "../../../lib/constants";
 import { apiService } from "../../../lib/api-service";
 
 function ticket() {
@@ -127,7 +128,7 @@ function ticket() {
         driver_id: selectedDriver.id,
         route: selectedVehicle.route,
         status: "ISSUED",
-        collection_amount: null,
+        collection_amount: TICKET_FEE,
         is_verified: false,
       };
 
@@ -211,7 +212,7 @@ function ticket() {
         </div>
       </div>
       //body
-      <div className="flex flex-row">
+      <div className="flex flex-row justify-around">
         <div>
           //section 1
           <div className="flex flex-col space-y-1.5 p-6">
@@ -374,7 +375,7 @@ function ticket() {
         </div>
         <div>
           //section 2
-          <div className="flex flex-row">
+          <div className="flex flex-row justify-between">
             <div>
               <div className="text-2xl font-semibold leading-none tracking-tight">
                 Recent Tickets

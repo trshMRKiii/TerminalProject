@@ -47,18 +47,18 @@ export const OperationsService = {
 
     return {
       batch1: {
-        total: b1.reduce((sum, t) => sum + (t.collection_amount || 0), 0),
-        count: b1.length,
+        total: b1.reduce((sum, t) => sum + Number(t.collection_amount || 0), 0),
+        count: b1.filter(t => t.status !== "COLLECTED").length,
         pending: b1.filter((t) => !t.is_verified).length,
       },
       batch2: {
-        total: b2.reduce((sum, t) => sum + (t.collection_amount || 0), 0),
-        count: b2.length,
+        total: b2.reduce((sum, t) => sum + Number(t.collection_amount || 0), 0),
+        count: b2.filter(t => t.status !== "COLLECTED").length,
         pending: b2.filter((t) => !t.is_verified).length,
       },
       totalVerified: activeTickets
         .filter((t) => t.is_verified)
-        .reduce((sum, t) => sum + (t.collection_amount || 0), 0),
+        .reduce((sum, t) => sum + Number(t.collection_amount || 0), 0),
     };
   },
 

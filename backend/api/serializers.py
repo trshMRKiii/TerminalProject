@@ -60,16 +60,13 @@ class DriverSerializer(serializers.ModelSerializer):
         ]
 
 class VehicleSerializer(serializers.ModelSerializer):
-    active_driver = serializers.PrimaryKeyRelatedField(
-        queryset=Driver.objects.all(), allow_null=True, required=False
-    )
 
     active_driver_name = serializers.CharField(source='active_driver.name', read_only=True)
 
     class Meta:
         model = Vehicle
         fields = [
-            'id', 'code', 'plate_number', 'route', 'status', 'active_driver', 'active_driver_name', 'is_archived', 'created_at', 'updated_at'
+            'id', 'code', 'plate_number', 'route', 'status', 'active_driver_name', 'is_archived', 'created_at', 'updated_at'
         ]
 
 
@@ -87,6 +84,9 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = '__all__'
+        extra_kwargs = {
+            'collection_amount': {'required': False} 
+        }
     
     def create(self, validated_data):
         # Replace vehicle_id and driver_id with actual objects
