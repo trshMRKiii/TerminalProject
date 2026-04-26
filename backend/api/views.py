@@ -23,7 +23,7 @@ class TicketViewSet(viewsets.ModelViewSet):
     serializer_class = TicketSerializer
 
     def perform_create(self, serializer):
-        # Only assign the current user if they're authenticated
+        #assign current user
         if self.request.user and self.request.user.is_authenticated:
             serializer.save(active_user=self.request.user)
         else:

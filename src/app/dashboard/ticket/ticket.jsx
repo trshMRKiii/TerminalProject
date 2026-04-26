@@ -123,33 +123,15 @@ function ticket() {
 
       const ticketData = {
         id: ticketId,
-        vehicle: selectedVehicle.id,
-        driver: selectedDriver.id,
+        vehicle_id: selectedVehicle.id,
+        driver_id: selectedDriver.id,
         route: selectedVehicle.route,
         status: "ISSUED",
         collection_amount: null,
         is_verified: false,
       };
 
-      const response = await fetch("http://localhost:8000/api/tickets/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ticketData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Backend error response:", errorData);
-        const errorMessage =
-          errorData.detail ||
-          JSON.stringify(errorData) ||
-          "Failed to issue ticket";
-        throw new Error(errorMessage);
-      }
-
-      const newTicket = await response.json();
+      const newTicket = await apiService.createTicket(ticketData);
       setSuccessMessage(`Ticket ${newTicket.id} issued successfully!`);
 
       // Refresh tickets list
@@ -367,7 +349,7 @@ function ticket() {
               type="button"
               onClick={handleIssueTicket}
               disabled={issuingTicket || !selectedVehicle || !selectedDriver}
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 w-full h-14 font-bold text-lg shadow-lg shadow-primary/20 rounded-xl"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 w-full h-14 font-bold text-lg shadow-lg shadow-primary/20 rounded-xl cursor-pointer"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -430,7 +412,6 @@ function ticket() {
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-2 font-semibold">TICKET ID</th>
-                  <th className="text-left p-2 font-semibold">ISSUER</th>
                   <th className="text-left p-2 font-semibold">VEHICLE</th>
                   <th className="text-left p-2 font-semibold">DRIVER</th>
                   <th className="text-left p-2 font-semibold">TIME</th>
@@ -466,9 +447,6 @@ function ticket() {
                   filteredTickets.map((ticket) => (
                     <tr key={ticket.id} className="border-b hover:bg-accent/50">
                       <td className="p-2">{ticket.id}</td>
-                      <td className="p-2">
-                        {ticket.active_user_name || "N/A"}
-                      </td>
                       <td className="p-2">
                         {ticket.vehicle?.plate_number || "N/A"}
                       </td>

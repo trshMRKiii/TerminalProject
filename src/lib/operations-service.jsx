@@ -21,17 +21,17 @@ export const OperationsService = {
 
   isDriverBusy(driverId, tickets, vehicles) {
     const hasActiveTicket = tickets.some(
-      (t) => t.driverId === driverId && t.status === "ISSUED",
+      (t) => t.driver?.id === driverId && t.status === "ISSUED",
     );
     const isOnTrip = vehicles.some(
-      (v) => v.activeDriverId === driverId && v.status === "ON_TRIP",
+      (v) => v.active_driver === driverId && v.status === "ON_TRIP",
     );
     return hasActiveTicket || isOnTrip;
   },
 
   isVehicleBusy(vehicleId, tickets) {
     return tickets.some(
-      (t) => t.vehicleId === vehicleId && t.status === "ISSUED",
+      (t) => t.vehicle?.id === vehicleId && t.status === "ISSUED",
     );
   },
 
@@ -39,26 +39,26 @@ export const OperationsService = {
     const activeTickets = tickets.filter((t) => t.status !== "CANCELLED");
 
     const b1 = activeTickets.filter(
-      (t) => this.getShiftBatchName(t.issuedAt) === SHIFTS.BATCH_1.name,
+      (t) => this.getShiftBatchName(t.issued_at) === SHIFTS.BATCH_1.name,
     );
     const b2 = activeTickets.filter(
-      (t) => this.getShiftBatchName(t.issuedAt) === SHIFTS.BATCH_2.name,
+      (t) => this.getShiftBatchName(t.issued_at) === SHIFTS.BATCH_2.name,
     );
 
     return {
       batch1: {
-        total: b1.reduce((sum, t) => sum + (t.collectionAmount || 0), 0),
+        total: b1.reduce((sum, t) => sum + (t.collection_amount || 0), 0),
         count: b1.length,
-        pending: b1.filter((t) => !t.isVerified).length,
+        pending: b1.filter((t) => !t.is_verified).length,
       },
       batch2: {
-        total: b2.reduce((sum, t) => sum + (t.collectionAmount || 0), 0),
+        total: b2.reduce((sum, t) => sum + (t.collection_amount || 0), 0),
         count: b2.length,
-        pending: b2.filter((t) => !t.isVerified).length,
+        pending: b2.filter((t) => !t.is_verified).length,
       },
       totalVerified: activeTickets
-        .filter((t) => t.isVerified)
-        .reduce((sum, t) => sum + (t.collectionAmount || 0), 0),
+        .filter((t) => t.is_verified)
+        .reduce((sum, t) => sum + (t.collection_amount || 0), 0),
     };
   },
 
@@ -68,11 +68,11 @@ export const OperationsService = {
   getRouteTallyReport(tickets, vehicles, dateFilter, batchFilter) {
     const filtered = tickets.filter((t) => {
       if (t.status === "CANCELLED") return false;
-      const ticketDateStr = t.issuedAt.split("T")[0];
+      const ticketDateStr = t.issued_at.split("T")[0];
       if (ticketDateStr !== dateFilter) return false;
 
       if (batchFilter !== "ALL") {
-        return this.getShiftBatchName(t.issuedAt) === batchFilter;
+        return this.getShiftBatchName(t.issued_at) === batchFilter;
       }
       return true;
     });
@@ -88,17 +88,17 @@ export const OperationsService = {
     });
 
     filtered.forEach((t) => {
-      const vehicle = vehicles.find((v) => v.id === t.vehicleId);
+      const vehicle = vehicles.find((v) => v.id === t.vehicle?.id);
       if (vehicle) {
         matrix[t.route].push({
           id: t.id,
-          unit: vehicle.unitNumber,
-          plate: vehicle.plateNumber,
-          time: format(new Date(t.issuedAt), "h:mm a"),
+          unit: vehicle.code,
+          plate: vehicle.plate_number,
+          time: format(new Date(t.issued_at), "h:mm a"),
         });
 
         finance[t.route].trips += 1;
-        finance[t.route].revenue += t.collectionAmount || TICKET_FEE;
+        finance[t.route].revenue += t.collection_amount || TICKET_FEE;
       }
     });
 

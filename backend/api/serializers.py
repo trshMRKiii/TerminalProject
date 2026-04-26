@@ -74,11 +74,30 @@ class VehicleSerializer(serializers.ModelSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
-    vehicle = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all())
-    driver = serializers.PrimaryKeyRelatedField(queryset=Driver.objects.all())
-    active_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
+    # For writing (creating): accept just IDs
+    vehicle_id = serializers.IntegerField(write_only=True, required=True)
+    driver_id = serializers.IntegerField(write_only=True, required=True)
+    
+    # For reading: return full nested objects
+    vehicle = VehicleSerializer(read_only=True)
+    driver = DriverSerializer(read_only=True)
+    active_user = serializers.StringRelatedField(read_only=True)
     active_user_name = serializers.CharField(source='active_user.username', read_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Ticket
         fields = '__all__'
+    
+    def create(self, validated_data):
+        # Replace vehicle_id and driver_id with actual objects
+        vehicle_id = validated_data.pop('vehicle_id')
+        driver_id = validated_data.pop('driver_id')
+        
+        vehicle = Vehicle.objects.get(id=vehicle_id)
+        driver = Driver.objects.get(id=driver_id)
+        
+        return Ticket.objects.create(
+            vehicle=vehicle,
+            driver=driver,
+            **validated_data
+        )
