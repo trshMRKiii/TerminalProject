@@ -9,7 +9,6 @@ function Driver() {
   const [editing, setEditing] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState({
-    id: "",
     name: "",
     contact: "",
     status: "ACTIVE",
@@ -46,7 +45,7 @@ function Driver() {
       });
       if (!response.ok) throw new Error("Failed to save driver");
       fetchDrivers();
-      setForm({ id: "", name: "", contact: "", status: "ACTIVE" });
+      setForm({ name: "", contact: "", status: "ACTIVE" });
       setEditing(null);
       setIsModalOpen(false);
     } catch (err) {
@@ -80,14 +79,6 @@ function Driver() {
     <div className="p-4">
       <h1 className="text-2xl mb-4">Drivers</h1>
       <form onSubmit={handleSubmit} className="mb-4">
-        <input
-          type="text"
-          placeholder="ID"
-          value={form.id}
-          onChange={(e) => setForm({ ...form, id: e.target.value })}
-          required
-          className="border p-2 mr-2"
-        />
         <input
           type="text"
           placeholder="Name"
@@ -141,7 +132,7 @@ function Driver() {
         <tbody>
           {drivers.map((driver) => (
             <tr key={driver.id}>
-              <td className="border p-2">{driver.id}</td>
+              <td className="border p-2">{driver.code}</td>
               <td className="border p-2">{driver.name}</td>
               <td className="border p-2">{driver.contact}</td>
               <td className="border p-2">{driver.status}</td>
@@ -170,11 +161,9 @@ function Driver() {
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
-                placeholder="ID"
-                value={form.id}
-                onChange={(e) => setForm({ ...form, id: e.target.value })}
-                required
-                className="border p-2 mr-2 w-full mb-2"
+                value={form.code}
+                disabled
+                className="border p-2 w-full mb-2 bg-gray-100"
               />
               <input
                 type="text"

@@ -15,44 +15,68 @@ class User(AbstractUser):
 
 class Driver(models.Model):
     STATUS_CHOICES = [('ACTIVE', 'Active'), ('INACTIVE', 'Inactive')]
-    
-    id = models.CharField(max_length=20, primary_key=True)
+
+    id = models.AutoField(primary_key=True)  
+    code = models.CharField(max_length=20, unique=True, editable=False)  
     name = models.CharField(max_length=100, db_index=True)
     contact = models.CharField(max_length=20)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
     is_archived = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         indexes = [models.Index(fields=['status', 'is_archived'])]
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # save first so id is assigned
+        if not self.code:
+            self.code = f"DRV{str(self.id).zfill(3)}"
+            super().save(update_fields=['code'])
+
+    def __str__(self):
+        return self.name
+
 # operations/models.py
 class Vehicle(models.Model):
-    STATUS_CHOICES = [('AVAILABLE', 'Available'), ('ON_TRIP', 'On Trip'), ('MAINTENANCE', 'Maintenance')]
-    
-    id = models.CharField(max_length=20, primary_key=True)
+    STATUS_CHOICES = [
+        ('AVAILABLE', 'Available'),
+        ('ON_TRIP', 'On Trip'),
+        ('MAINTENANCE', 'Maintenance'),
+    ]
+
+    id = models.AutoField(primary_key=True)   # auto-increment integer PK
+    code = models.CharField(max_length=20, unique=True, editable=False)  # VHC prefix
     plate_number = models.CharField(unique=True, max_length=20, db_index=True)
-    unit_number = models.CharField(unique=True, max_length=20, db_index=True)
     route = models.CharField(max_length=100, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='AVAILABLE')
-    active_driver = models.ForeignKey(Driver, null=True, blank=True, on_delete=models.SET_NULL)
+    active_driver = models.ForeignKey('Driver', null=True, blank=True, on_delete=models.SET_NULL, related_name='vehicles')
     is_archived = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         indexes = [
             models.Index(fields=['status', 'is_archived']),
             models.Index(fields=['route', 'is_archived']),
         ]
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # save first so id is assigned
+        if not self.code:
+            self.code = f"VHC{str(self.id).zfill(3)}"
+            super().save(update_fields=['code'])
+
+
 class Ticket(models.Model):
     STATUS_CHOICES = [('ISSUED', 'Issued'), ('DISPATCHED', 'Dispatched'), ('COLLECTED', 'Collected'), ('CANCELLED', 'Cancelled')]
     
-    id = models.CharField(max_length=20, primary_key=True)
+    id = models.CharField(max_length=50, primary_key=True)
+
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='tickets')
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='tickets')
+    active_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets', null=True, blank=True)
+
     route = models.CharField(max_length=100, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ISSUED')
     collection_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)

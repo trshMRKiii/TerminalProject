@@ -42,10 +42,24 @@ function User() {
       const url = editing
         ? `${API_BASE}/users/${editing.id}/`
         : `${API_BASE}/users/`;
+      
+      const payload = {
+        username: form.username,
+        email: form.email,
+        first_name: form.first_name,
+        last_name: form.last_name,
+        role: form.role,
+        is_active: form.is_active,
+      };
+      
+      if (form.password) {
+        payload.password = form.password;
+      }
+      
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error("Failed to save user");
       fetchUsers();
@@ -67,7 +81,15 @@ function User() {
 
   const handleEdit = (user) => {
     setEditing(user);
-    setForm({ ...user });
+    setForm({
+      username: user.username,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      password: "",
+      role: user.role,
+      is_active: user.is_active,
+    });
     setIsModalOpen(true);
   };
 
@@ -141,7 +163,7 @@ function User() {
           <option value="MANAGER">Manager</option>
         </select>
         <select
-          value={form.is_active}
+          value={form.is_active ? "true" : "false"}
           onChange={(e) =>
             setForm({ ...form, is_active: e.target.value === "true" })
           }
@@ -270,7 +292,7 @@ function User() {
                 <option value="MANAGER">Manager</option>
               </select>
               <select
-                value={form.is_active}
+                value={form.is_active ? "true" : "false"}
                 onChange={(e) =>
                   setForm({ ...form, is_active: e.target.value === "true" })
                 }

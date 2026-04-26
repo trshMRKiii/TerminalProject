@@ -5,10 +5,24 @@ from .models import User, Driver, Vehicle, Ticket
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'is_active', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'role',
+            'is_active',
+            'password',
+        ]
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},
+            'username': {'required': False},
+            'email': {'required': False}
+        }
 
     def create(self, validated_data):
+        password = validated_data.pop('password', None)
         user = User(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -17,30 +31,53 @@ class UserSerializer(serializers.ModelSerializer):
             role=validated_data.get('role', 'PERSONNEL'),
             is_active=validated_data.get('is_active', True),
         )
-        user.set_password(validated_data['password'])
+        if password:
+            user.set_password(password)
         user.save()
         return user
 
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver
-        fields = '__all__'
-
+        fields = [
+            'id',       
+            'code',      
+            'name',
+            'contact',
+            'status',
+            'is_archived',
+            'created_at',
+            'updated_at',
+        ]
 
 class VehicleSerializer(serializers.ModelSerializer):
     active_driver = serializers.PrimaryKeyRelatedField(
         queryset=Driver.objects.all(), allow_null=True, required=False
     )
 
+    active_driver_name = serializers.CharField(source='active_driver.name', read_only=True)
+
     class Meta:
         model = Vehicle
-        fields = '__all__'
+        fields = [
+            'id', 'code', 'plate_number', 'route', 'status', 'active_driver', 'active_driver_name', 'is_archived', 'created_at', 'updated_at'
+        ]
 
 
 class TicketSerializer(serializers.ModelSerializer):
     vehicle = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all())
     driver = serializers.PrimaryKeyRelatedField(queryset=Driver.objects.all())
+    active_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
+    active_user_name = serializers.CharField(source='active_user.username', read_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Ticket

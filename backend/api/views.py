@@ -21,3 +21,11 @@ class VehicleViewSet(viewsets.ModelViewSet):
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
+
+    def perform_create(self, serializer):
+        # Only assign the current user if they're authenticated
+        if self.request.user and self.request.user.is_authenticated:
+            serializer.save(active_user=self.request.user)
+        else:
+            # For unauthenticated requests, just save without a user
+            serializer.save()

@@ -4,21 +4,33 @@ const API_BASE = "http://127.0.0.1:8000/api";
 
 function Vehicle() {
   const [vehicles, setVehicles] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editing, setEditing] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState({
-    id: "",
     plate_number: "",
-    unit_number: "",
     route: "",
     status: "AVAILABLE",
+    active_driver: null,
   });
 
   useEffect(() => {
     fetchVehicles();
+    fetchDrivers();
   }, []);
+
+  const fetchDrivers = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/drivers/`);
+      if (!response.ok) throw new Error("Failed to fetch drivers");
+      const data = await response.json();
+      setDrivers(data);
+    } catch (err) {
+      console.error("Error fetching drivers:", err.message);
+    }
+  };
 
   const fetchVehicles = async () => {
     try {
@@ -48,11 +60,10 @@ function Vehicle() {
       if (!response.ok) throw new Error("Failed to save vehicle");
       fetchVehicles();
       setForm({
-        id: "",
         plate_number: "",
-        unit_number: "",
         route: "",
         status: "AVAILABLE",
+        active_driver: null,
       });
       setEditing(null);
       setIsModalOpen(false);
@@ -89,25 +100,9 @@ function Vehicle() {
       <form onSubmit={handleSubmit} className="mb-4">
         <input
           type="text"
-          placeholder="ID"
-          value={form.id}
-          onChange={(e) => setForm({ ...form, id: e.target.value })}
-          required
-          className="border p-2 mr-2"
-        />
-        <input
-          type="text"
           placeholder="Plate Number"
           value={form.plate_number}
           onChange={(e) => setForm({ ...form, plate_number: e.target.value })}
-          required
-          className="border p-2 mr-2"
-        />
-        <input
-          type="text"
-          placeholder="Unit Number"
-          value={form.unit_number}
-          onChange={(e) => setForm({ ...form, unit_number: e.target.value })}
           required
           className="border p-2 mr-2"
         />
@@ -128,6 +123,23 @@ function Vehicle() {
           <option value="ON_TRIP">On Trip</option>
           <option value="MAINTENANCE">Maintenance</option>
         </select>
+        <select
+          value={form.active_driver || ""}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              active_driver: e.target.value ? parseInt(e.target.value) : null,
+            })
+          }
+          className="border p-2 mr-2"
+        >
+          <option value="">Select Driver (Optional)</option>
+          {drivers.map((driver) => (
+            <option key={driver.id} value={driver.id}>
+              {driver.name}
+            </option>
+          ))}
+        </select>
         <button type="submit" className="bg-blue-500 text-white p-2">
           {editing ? "Update" : "Add"} Vehicle
         </button>
@@ -137,11 +149,10 @@ function Vehicle() {
             onClick={() => {
               setEditing(null);
               setForm({
-                id: "",
                 plate_number: "",
-                unit_number: "",
                 route: "",
                 status: "AVAILABLE",
+                active_driver: null,
               });
             }}
             className="bg-gray-500 text-white p-2 ml-2"
@@ -155,8 +166,8 @@ function Vehicle() {
           <tr>
             <th className="border p-2">ID</th>
             <th className="border p-2">Plate Number</th>
-            <th className="border p-2">Unit Number</th>
             <th className="border p-2">Route</th>
+            <th className="border p-2">Active Driver</th>
             <th className="border p-2">Status</th>
             <th className="border p-2">Actions</th>
           </tr>
@@ -164,10 +175,12 @@ function Vehicle() {
         <tbody>
           {vehicles.map((vehicle) => (
             <tr key={vehicle.id}>
-              <td className="border p-2">{vehicle.id}</td>
+              <td className="border p-2">{vehicle.code}</td>
               <td className="border p-2">{vehicle.plate_number}</td>
-              <td className="border p-2">{vehicle.unit_number}</td>
               <td className="border p-2">{vehicle.route}</td>
+              <td className="border p-2">
+                {vehicle.active_driver_name || "-"}
+              </td>
               <td className="border p-2">{vehicle.status}</td>
               <td className="border p-2">
                 <button
@@ -194,28 +207,10 @@ function Vehicle() {
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
-                placeholder="ID"
-                value={form.id}
-                onChange={(e) => setForm({ ...form, id: e.target.value })}
-                required
-                className="border p-2 mr-2 w-full mb-2"
-              />
-              <input
-                type="text"
                 placeholder="Plate Number"
                 value={form.plate_number}
                 onChange={(e) =>
                   setForm({ ...form, plate_number: e.target.value })
-                }
-                required
-                className="border p-2 mr-2 w-full mb-2"
-              />
-              <input
-                type="text"
-                placeholder="Unit Number"
-                value={form.unit_number}
-                onChange={(e) =>
-                  setForm({ ...form, unit_number: e.target.value })
                 }
                 required
                 className="border p-2 mr-2 w-full mb-2"
@@ -237,6 +232,25 @@ function Vehicle() {
                 <option value="ON_TRIP">On Trip</option>
                 <option value="MAINTENANCE">Maintenance</option>
               </select>
+              <select
+                value={form.active_driver || ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    active_driver: e.target.value
+                      ? parseInt(e.target.value)
+                      : null,
+                  })
+                }
+                className="border p-2 mr-2 w-full mb-2"
+              >
+                <option value="">Select Driver (Optional)</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 className="bg-blue-500 text-white p-2 w-full"
@@ -249,11 +263,10 @@ function Vehicle() {
                   setIsModalOpen(false);
                   setEditing(null);
                   setForm({
-                    id: "",
                     plate_number: "",
-                    unit_number: "",
                     route: "",
                     status: "AVAILABLE",
+                    active_driver: null,
                   });
                 }}
                 className="bg-gray-500 text-white p-2 w-full mt-2"
