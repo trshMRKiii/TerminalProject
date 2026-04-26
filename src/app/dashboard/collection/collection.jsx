@@ -338,7 +338,7 @@ function collection() {
                           <td className="p-3 text-sm">
                             {formatTime(ticket.issued_at)}
                           </td>
-                          {/* to be edit */}
+                          {/* to be edit pag may auth na*/}
                           <td className="p-3 text-sm">N/A</td>
                           <td className="p-3 text-sm">
                             {ticket.vehicle?.plate_number || "N/A"}
