@@ -94,6 +94,10 @@ class TicketSerializer(serializers.ModelSerializer):
         driver_id = validated_data.pop('driver_id')
         
         vehicle = Vehicle.objects.get(id=vehicle_id)
+
+        if not driver_id and vehicle.active_driver_id:
+            driver_id = vehicle.active_driver_id
+
         driver = Driver.objects.get(id=driver_id)
         
         return Ticket.objects.create(

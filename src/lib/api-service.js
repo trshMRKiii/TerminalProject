@@ -101,6 +101,10 @@ export const apiService = {
     return this.post("/tickets/", ticketData);
   },
 
+  updateTicket(ticketId, ticketData) {
+    return this.patch(`/tickets/${ticketId}/`, ticketData);
+  },
+
   getVehicles() {
     return this.get("/vehicles/");
   },

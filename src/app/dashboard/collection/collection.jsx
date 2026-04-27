@@ -97,32 +97,35 @@ function collection() {
   };
 
   const handleResetAmount = async (ticketId) => {
-  try {
-    // If no ticketId provided, collect all verified tickets (end of day)
-    if (!ticketId) {
-      const verifiedTickets = tickets.filter(t => t.is_verified && t.status !== "COLLECTED");
-      for (const ticket of verifiedTickets) {
-        await apiService.patch(`/tickets/${ticket.id}/`, {
+    try {
+      // If no ticketId provided, collect all verified tickets (end of day)
+      if (!ticketId) {
+        const verifiedTickets = tickets.filter(
+          t => t.is_verified && ["ISSUED", "RETURNED"].includes(t.status)
+        );
+        for (const ticket of verifiedTickets) {
+          await apiService.patch(`/tickets/${ticket.id}/`, {
+            collection_amount: 0,
+            status: "COLLECTED"
+          });
+        }
+        setSuccessMessage(`${verifiedTickets.length} ticket(s) collected successfully!`);
+      } else {
+        // Collect single ticket
+        await apiService.patch(`/tickets/${ticketId}/`, {
           collection_amount: 0,
           status: "COLLECTED"
         });
+        setSuccessMessage(`Ticket ${ticketId} amount reset to 0`);
       }
-      setSuccessMessage(`${verifiedTickets.length} ticket(s) collected successfully!`);
-    } else {
-      // Collect single ticket
-      await apiService.patch(`/tickets/${ticketId}/`, {
-        collection_amount: 0,
-        status: "COLLECTED"
-      });
-      setSuccessMessage(`Ticket ${ticketId} amount reset to 0`);
+      fetchTickets();
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error resetting collection amount:", err);
     }
-    fetchTickets();
-    setTimeout(() => setSuccessMessage(""), 3000);
-  } catch (err) {
-    setError(err.message);
-    console.error("Error resetting collection amount:", err);
-  }
-};
+  };
+
 
 
   const formatTime = (dateString) => {
@@ -220,7 +223,7 @@ function collection() {
 
                 {/* Batch 2 */}
                 <div className="border border-gray-200 rounded-lg p-4 space-y-3">
-                  <p className="font-semibold">Batch 2 (3pm-7pm)</p>
+                  <p className="font-semibold">Batch 2 (3pm-9pm)</p>
                   {batchStats && (
                     <>
                       <div className="flex justify-between items-center">

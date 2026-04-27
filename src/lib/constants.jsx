@@ -11,7 +11,7 @@ export const SHIFTS = {
     name: "Batch 2",
     label: "Batch 2 (3pm-9pm)",
     startHour: 15,
-    endHour: 20,
+    endHour: 21,
   },
 };
 

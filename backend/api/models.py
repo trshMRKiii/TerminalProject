@@ -29,7 +29,7 @@ class Driver(models.Model):
         indexes = [models.Index(fields=['status', 'is_archived'])]
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # save first so id is assigned
+        super().save(*args, **kwargs)
         if not self.code:
             self.code = f"DRV{str(self.id).zfill(3)}"
             super().save(update_fields=['code'])
@@ -37,7 +37,6 @@ class Driver(models.Model):
     def __str__(self):
         return self.name
 
-# operations/models.py
 class Vehicle(models.Model):
     STATUS_CHOICES = [
         ('AVAILABLE', 'Available'),
@@ -45,8 +44,8 @@ class Vehicle(models.Model):
         ('MAINTENANCE', 'Maintenance'),
     ]
 
-    id = models.AutoField(primary_key=True)   # auto-increment integer PK
-    code = models.CharField(max_length=20, unique=True, editable=False)  # VHC prefix
+    id = models.AutoField(primary_key=True)   
+    code = models.CharField(max_length=20, unique=True, editable=False)
     plate_number = models.CharField(unique=True, max_length=20, db_index=True)
     route = models.CharField(max_length=100, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='AVAILABLE')
@@ -69,7 +68,7 @@ class Vehicle(models.Model):
 
 
 class Ticket(models.Model):
-    STATUS_CHOICES = [('ISSUED', 'Issued'), ('DISPATCHED', 'Dispatched'), ('COLLECTED', 'Collected'), ('CANCELLED', 'Cancelled')]
+    STATUS_CHOICES = [('ISSUED', 'Issued'), ('DISPATCHED', 'Dispatched'), ('COLLECTED', 'Collected'), ('CANCELLED', 'Cancelled'), ('RETURNED', 'Returned')]
     
     id = models.CharField(max_length=50, primary_key=True)
 

@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "../../components/ui/sidebar";
 import Dashboard from "./Dashboard";
-import Dispatch from "./dispatch/dispatch";
 import Ticket from "./ticket/ticket";
 import Collections from "./collection/collection";
 import Vehicles from "./vehicle/vehicle";
@@ -84,8 +83,7 @@ function mainIndex() {
         {/* Main body */}
         <main className="flex-1 overflow-y-auto p-6">
           <Routes>
-            <Route path="/Dashboard" element={<Dashboard />} />
-            <Route path="/Dispatch" element={<Dispatch />} />
+            <Route path="/Dashboard" element={<Dashboard />} />           
             <Route path="/Ticket" element={<Ticket />} />
             <Route path="/Collections" element={<Collections />} />
             <Route path="/Vehicles" element={<Vehicles />} />

@@ -20,11 +20,6 @@ function Navbar() {
         Dashboard
       </Link>
 
-      <Link to="/Dispatch" className={navLinkActive}>
-        <DispatchIcon className={`${iconBase} text-white`} />
-        Distpatch
-      </Link>
-
       <Link to="/Ticket" className={navLinkActive}>
         <TicketIcon className={`${iconBase} text-white`} />
         Tickets
