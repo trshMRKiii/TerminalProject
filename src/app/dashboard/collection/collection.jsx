@@ -40,6 +40,10 @@ function collection() {
           .toLowerCase()
           .includes(searchTerm.toLowerCase()),
     );
+    const sorted = filtered.sort((a, b) => 
+      new Date(b.issued_at) - new Date(a.issued_at)
+    );
+    setFilteredTickets(sorted.slice(0, 10));
     setFilteredTickets(filtered);
   }, [searchTerm, tickets]);
 
@@ -309,7 +313,7 @@ function collection() {
                 </div>
               )}
 
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-lg overflow-y-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b">
                     <tr>

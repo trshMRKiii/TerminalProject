@@ -37,7 +37,11 @@ function ticket() {
           .toLowerCase()
           .includes(searchTerm.toLowerCase()),
     );
-    setFilteredTickets(filtered.slice(0, 10)); // Show last 10
+    // Sort by issued_at descending (newest first)
+    const sorted = filtered.sort((a, b) => 
+      new Date(b.issued_at) - new Date(a.issued_at)
+    );
+    setFilteredTickets(sorted.slice(0, 10)); // Show last 10
   }, [searchTerm, tickets]);
 
   const fetchTickets = async () => {
